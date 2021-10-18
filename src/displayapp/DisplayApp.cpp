@@ -30,6 +30,7 @@
 #include "displayapp/screens/BatteryInfo.h"
 #include "displayapp/screens/Steps.h"
 #include "displayapp/screens/Error.h"
+#include "displayapp/screens/MyApp.h"
 
 #include "drivers/Cst816s.h"
 #include "drivers/St7789.h"
@@ -414,6 +415,9 @@ void DisplayApp::LoadApp(Apps app, DisplayApp::FullRefreshDirections direction) 
       break;
     case Apps::Paddle:
       currentScreen = std::make_unique<Screens::Paddle>(this, lvgl);
+      break;
+    case Apps::MyApp:
+      currentScreen = std::make_unique<Screens::MyApp>(this);
       break;
     case Apps::Music:
       currentScreen = std::make_unique<Screens::Music>(this, systemTask->nimble().music());
