@@ -80,7 +80,8 @@ MyApp::MyApp(DisplayApp* app) : Screen(app) {
 
   updatePattern();
   startTime = xTaskGetTickCount();
-};
+  taskRefresh = lv_task_create(RefreshTaskCallback, LV_DISP_DEF_REFR_PERIOD, LV_TASK_PRIO_MID, this);
+}
 
 MyApp::~MyApp() {
   lv_obj_clean(lv_scr_act());
@@ -92,21 +93,22 @@ void MyApp::updatePattern() {
 }
 
 void MyApp::Refresh() {
-  lv_obj_set_style_local_bg_color(btnRed, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
-  // if (playing_pattern) {
-  //   lv_obj_remove_style(btnRed, LV_STATE_DEFAULT, &styleRed);
-  //   lv_obj_add_style(btnRed, LV_STATE_DEFAULT, &styleWhite);
-    // if (xTaskGetTickCount() - startTime > configTICK_RATE_HZ / static_cast<uint16_t>(2)) {
-    //   startTime = xTaskGetTickCount();
-    //   input_idx++;
-    //   lv_obj_add_style(btnRed, LV_STATE_DEFAULT, &styleRed);
-    // }
-    // if (input_idx == pattern.size()) {
-    //   lv_obj_set_style_local_bg_color(btnRed, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_RED);
-    //   playing_pattern = false;
-    //   input_idx = 0;
-    // }
-  // }
+  if (playing_pattern) {
+    if (xTaskGetTickCount() - startTime > configTICK_RATE_HZ / static_cast<uint16_t>(2) && !blink) {
+      startTime = xTaskGetTickCount();
+      lv_obj_set_style_local_bg_color(btnRed, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+      blink = true;
+    } else if (xTaskGetTickCount() - startTime > configTICK_RATE_HZ / static_cast<uint16_t>(2) && blink) {
+      startTime = xTaskGetTickCount();
+      input_idx++;
+      lv_obj_set_style_local_bg_color(btnRed, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_RED);
+      blink = false;
+    }
+    if (input_idx == pattern.size()) {
+      playing_pattern = false;
+      input_idx = 0;
+    }
+  }
 }
 
 void MyApp::btnRedEventHandler(lv_event_t event) {
@@ -116,7 +118,13 @@ void MyApp::btnRedEventHandler(lv_event_t event) {
   if (playing_pattern) {
     return;
   }
-  updatePattern();
-  score++;
-  lv_label_set_text_fmt(scoreText, "Score #FFFF00 %i#", score);
+  
+  if (input_idx < pattern.size()) {
+    input_idx++;
+  }
+  else {
+    score++;
+    lv_label_set_text_fmt(scoreText, "Score #FFFF00 %i#", score);
+    updatePattern();
+  }
 }

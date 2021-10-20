@@ -24,6 +24,7 @@ namespace Pinetime {
 
       private:
         bool playing_pattern = true;
+        bool blink = false;
         TickType_t startTime = 0;
         unsigned int score = 0;
         unsigned int input_idx = 0;
@@ -31,6 +32,7 @@ namespace Pinetime {
         lv_obj_t* scoreText, *btnRed, *btnBlue, *btnGreen, *btnYellow;
         std::vector<int> pattern;
 
+        lv_task_t* taskRefresh;
       };
     }
   }
